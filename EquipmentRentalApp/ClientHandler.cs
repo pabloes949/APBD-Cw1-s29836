@@ -41,4 +41,9 @@ public static class ClientHandler
     {
         foreach (Client client in ClientIdentifiers.Values) callback(client);
     }
+
+    public static int GetClientCount()
+    {
+        return ClientIdentifiers.Count;
+    }
 }

@@ -118,8 +118,12 @@ public static class TerminalHandler
                     show equipment information
                 equipment-available {equipment-id}
                     check if equipment is available to be rented
+                equipment-available
+                    list only available equipment
                 equipment-history {equipment-id}
                     list equipment rental history
+                equipment-state {equipment-id}
+                    set a state of equipment (operable, broken, repair)
                 report {date-from} {date-to}
                     generate rental report in the given period of time
                 payment-accept {client-id} {value}
@@ -167,6 +171,7 @@ public static class TerminalHandler
 
     private static void HandleClientListPrompt(params string[] args)
     {
+        if (ClientHandler.GetClientCount() == 0) throw new ConsoleException(16, []);
         ClientHandler.getClientList(client => Console.WriteLine($"ID: {client.Id}; Name: {client.FullName}"));
     }
 
@@ -218,5 +223,27 @@ public static class TerminalHandler
     private static void HandlePaymentPrompt(params string[] args)
     {
         Console.WriteLine("register payment for delayed return");
+    }
+
+    private static int FormCollector(string header, string exit, string[] options)
+    {
+        string instruction = $"{header} - type number:";
+        for (int x = 0; x < options.Length; x++) instruction += $"\n{x + 1} : {options[x]}";
+        instruction += $"\n{options.Length + 1} - [exit: {exit}]";
+        int index;
+
+        do
+        {
+            Console.WriteLine(instruction);
+            bool isIndexCorrect = int.TryParse(Console.ReadLine(), out index);
+            if (!isIndexCorrect || index < 0 || index > options.Length) // > instead of >= - options.Length = Exit
+            {
+                Console.WriteLine("Incorrect value, try again...");
+                index = -1;
+            }
+            else break;
+        } while (true);
+
+        return index;
     }
 }
