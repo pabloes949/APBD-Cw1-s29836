@@ -7,11 +7,10 @@ public static class ClientHandler
 
     public static void RegisterNewClient(Client client)
     {
-        if (ClientIdentifiers.ContainsKey(client.Id)) throw new ConsoleException(8, new[] { client.Id });
         ClientRentalHistory.Add(client, new List<Rental>());
         ClientIdentifiers.Add(client.Id, client);
     }
-
+    
     public static Dictionary<Rental, int> ListUnpaidAssets(Client client)
     {
         Dictionary<Rental, int> total = new Dictionary<Rental, int>();
@@ -45,5 +44,18 @@ public static class ClientHandler
     public static int GetClientCount()
     {
         return ClientIdentifiers.Count;
+    }
+    
+    public static bool IsIdentifierRegistered(string id)
+    {
+        return ClientIdentifiers.ContainsKey(id);
+    }
+    
+    public static string GenerateClientId()
+    {
+        string id;
+        do id = Guid.NewGuid().ToString("N").Substring(0, 5); //5 digits
+        while (ClientIdentifiers.ContainsKey(id));
+        return id;
     }
 }

@@ -2,61 +2,125 @@
 
 public abstract class Client
 {
-    public string Id { get; }
-    public string FullName { get; }
-    
-    public string FirstName { get; protected set; }
-    public string LastName { get; protected set; }
-    public string EmailAddress { get; protected set; }
-    
-    public ClientType Type { get; protected set; }
+    public string? Id { get; protected set; }
+    protected string? Name { get; }
+    protected string? Surname { get; }
+    protected string? Email { get; }
 
-    public Client(string id, string fullName)
+    protected Client()
     {
-        this.Id = id;
-        this.FullName = fullName;
+        this.Name = TerminalHandler.GetValueFromUser("Give a name", false);
+        this.Surname = TerminalHandler.GetValueFromUser("Give a surname", false);
+        this.Email = TerminalHandler.GetValueFromUser("Give an email address", true, (val) =>
+        {
+            if (val.Contains('@')) return true;
+            Console.WriteLine("Invalid email address, try again...");
+            return false;
+        });
+    }
+
+    public static Dictionary<string, Func<Client>> CreateClient = new()
+    {
+        { "Student", () => new Student() },
+        { "Employee", () => new Employee() },
+        { "Guest", () => new Guest() }
+    };
+
+    public static string[] GetClientTypes()
+    {
+        return CreateClient.Keys.ToArray();
     }
 }
 
-public enum ClientType
+public abstract class Internal : Client
 {
-    Student,
-    Employee,
-    Guest,
-    All,
-    Internal,
-    External
+    protected Internal()
+    {
+        this.Id = TerminalHandler.GetValueFromUser("Give index number", false, (val) =>
+        {
+            if (ClientHandler.IsIdentifierRegistered(val))
+            {
+                Console.WriteLine("The given index number is already registered, try again...");
+                return false;
+            }
+            return true;
+        });
+    }
 }
 
-public class Student : Client
+public class Student : Internal
 {
-    public FieldOfStudy Subject { get; private set; }
-    public int StartYear { get; private set; }
-    public bool IsActiveStudent { get; private set; }
-    public bool IsFullTime { get; private set; }
+    private StudyField FieldOfStudy { get; set; }
+    private int StartYear { get; set; }
+    private bool IsActiveStudent { get; set; }
+    private StudyMode ModeOfStudy { get; set; }
 
-    public enum FieldOfStudy
+    private enum StudyMode
+    {
+        FullTime,
+        PartTime
+    }
+
+    private enum StudyField
     {
         ComputerScience,
-        Automation,
-        Electronics,
-        MechanicalEngineering,
-        BiomedicalEngineering,
-        Mathematics,
-        Physics,
-        Management,
+        CognitiveScience,
+        InformationManagement,
+        GraphicDesign,
+        MultimediaArts,
+        InteriorArchitecture,
+        JapaneseCulture
     }
-    
-    public Student(string id, string fullName) : base(id, fullName)
+
+    public Student()
     {
-        this.Type = ClientType.Student;
+        this.FieldOfStudy = (StudyField)TerminalHandler.GetOptionFromUser(
+            "Choose field of study",
+            "abort adding new student",
+            Enum.GetNames(typeof(StudyField))
+        ); //choose enum option by index
+
+        this.ModeOfStudy = (StudyMode)TerminalHandler.GetOptionFromUser(
+            "Choose mode of study",
+            "abort adding new student",
+            Enum.GetNames(typeof(StudyMode))
+        );
+
+        this.StartYear = int.Parse(TerminalHandler.GetValueFromUser("Type start year of studies", false, (val) =>
+        {
+            if (!int.TryParse(val, out int year))
+            {
+                Console.WriteLine("Invalid year value, try again...");
+                return false;
+            }
+
+            if (year < 1990 || year > DateTime.Now.Year)
+            {
+                Console.WriteLine("The year is out of the allowed range, try again...");
+                return false;
+            }
+
+            return true;
+        }));
+
+        this.IsActiveStudent = TerminalHandler.GetOptionFromUser(
+            "Is student active",
+            "abort adding new student",
+            new[] { "yes", "no" }) == 0;
+    }
+
+    public override string ToString()
+    {
+        return
+            $"[Student] Index number: {this.Id}; Name: {this.Name}; Surname: {this.Surname}; Subject: {FieldOfStudy.ToString()}; Mode: {ModeOfStudy.ToString()}; Active: {this.IsActiveStudent}";
     }
 }
 
-public class Employee : Client
+public class Employee : Internal
 {
-    public Role Position { get; set; }
-    public enum Role
+    private Position Role { get; set; }
+
+    private enum Position
     {
         Professor,
         AssistantProfessor,
@@ -68,17 +132,36 @@ public class Employee : Client
         Administrator,
         DepartmentHead
     }
-    
-    public Employee(string id, string fullName) : base(id, fullName)
+
+    public Employee()
     {
-        this.Type = ClientType.Employee;
+        this.Role = (Position)TerminalHandler.GetOptionFromUser(
+            "Choose employee position",
+            "abort adding new employe",
+            Enum.GetNames(typeof(Position))
+        );
+    }
+    
+    
+    public override string ToString()
+    {
+        return
+            $"[Employee] Index number: {this.Id}; Name: {this.Name}; Surname: {this.Surname}; Position: {this.Role.ToString()}";
     }
 }
 
 public class Guest : Client
 {
-    public Guest(string id, string fullName) : base(id, fullName)
+    private string Company { get; set; }
+    public Guest()
     {
-        this.Type = ClientType.Guest;
+        this.Id = ClientHandler.GenerateClientId();
+        this.Company = TerminalHandler.GetValueFromUser("Give company name", true);
+    }
+    
+    public override string ToString()
+    {
+        return
+            $"[Guest] Name: {this.Name}; Surname: {this.Surname}; Company: {this.Company}";
     }
 }

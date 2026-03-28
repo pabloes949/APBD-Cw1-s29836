@@ -33,13 +33,13 @@ public static class TerminalHandler
                     HandleEquipmentRegisterPrompt(args);
                     break;
                 case "client-add":
-                    HandleClientAddPrompt(args);
+                    HandleClientAddPrompt();
                     break;
                 case "client-detail":
                     HandleClientDetailPrompt(args);
                     break;
                 case "client-list":
-                    HandleClientListPrompt(args);
+                    HandleClientListPrompt();
                     break;
                 case "client-rentals":
                     HandleClientRentalsPrompt(args);
@@ -97,7 +97,7 @@ public static class TerminalHandler
                     register new equipment
                     quantity is optional, default: 1
                 client-add {client-id} {name(s) surname(s)}
-                    register new client
+                    register new client - the use is brought through a survey
                 client-detail {client-id}
                     show client information
                 client-list
@@ -147,16 +147,13 @@ public static class TerminalHandler
         Console.WriteLine("handle new equipment");
     }
 
-    private static void HandleClientAddPrompt(params string[] args)
+    private static void HandleClientAddPrompt()
     {
-        if (args.Length < 2) throw new ConsoleException(3, []);
-        string id = args[0].Trim();
-        if (id.Length == 0) throw new ConsoleException(11, []);
-        string[] namePart = args[1..];
-        string fullName = string.Join(" ", namePart).Trim();
-        if (fullName.Length == 0) throw new ConsoleException(12, []);
-        ClientHandler.RegisterNewClient(new Client(id, fullName));
-        Console.WriteLine($"Client {id} registered successfully.");
+        string[] clientTypes = Client.GetClientTypes();
+        int chosenType = TerminalHandler.GetOptionFromUser("Choose user type", "give up adding new user", clientTypes);
+        Client c = Client.CreateClient[clientTypes[chosenType]]();
+        ClientHandler.RegisterNewClient(c);
+        Console.WriteLine($"Client {c.Id} registered successfully.");
     }
 
     private static void HandleClientDetailPrompt(params string[] args)
@@ -166,13 +163,13 @@ public static class TerminalHandler
         if (id.Length == 0) throw new ConsoleException(14, []);
         Client? client = ClientHandler.GetClientById(id);
         if (client == null) throw new ConsoleException(15, new[] { id });
-        Console.WriteLine($"ID: {client.Id}; Name: {client.FullName}");
+        Console.WriteLine(client.ToString());
     }
 
-    private static void HandleClientListPrompt(params string[] args)
+    private static void HandleClientListPrompt()
     {
         if (ClientHandler.GetClientCount() == 0) throw new ConsoleException(16, []);
-        ClientHandler.getClientList(client => Console.WriteLine($"ID: {client.Id}; Name: {client.FullName}"));
+        ClientHandler.getClientList(client => Console.WriteLine(client.ToString()));
     }
 
     private static void HandleClientRentalsPrompt(params string[] args)
@@ -225,25 +222,42 @@ public static class TerminalHandler
         Console.WriteLine("register payment for delayed return");
     }
 
-    private static int FormCollector(string header, string exit, string[] options)
+    public static string GetValueFromUser(string headerMessage, bool isOptional, Func<string, bool>? validate = null)
     {
-        string instruction = $"{header} - type number:";
-        for (int x = 0; x < options.Length; x++) instruction += $"\n{x + 1} : {options[x]}";
-        instruction += $"\n{options.Length + 1} - [exit: {exit}]";
-        int index;
-
+        string opt = isOptional ? " (optional)" : "";
+        string instruction = $"{headerMessage}{opt} or type exit";
+        Console.WriteLine(instruction);
         do
         {
-            Console.WriteLine(instruction);
-            bool isIndexCorrect = int.TryParse(Console.ReadLine(), out index);
-            if (!isIndexCorrect || index < 0 || index > options.Length) // > instead of >= - options.Length = Exit
+            string value = Console.ReadLine() ?? "";
+            if (value.Trim().Length == 0)
             {
-                Console.WriteLine("Incorrect value, try again...");
-                index = -1;
+                if (isOptional) return "";
+                Console.WriteLine("The value cannot be empty, try again...");
             }
+            else if (value.Trim() == "exit") throw new ConsoleException(3, []);
+            else if (!validate?.Invoke(value) ?? false) continue;
+            else return value;
+        } while (true);
+    }
+
+    public static int GetOptionFromUser(string headerMessage, string exitMessage, string[] options)
+    {
+        int index;
+        string instruction = $"{headerMessage} - type number:";
+        for (int x = 0; x < options.Length; x++) instruction += $"\n{x + 1} : {options[x]}";
+        instruction += $"\n{options.Length + 1} - [exit: {exitMessage}]";
+        Console.WriteLine(instruction);
+        do
+        {
+            bool isIndexCorrect = int.TryParse(Console.ReadLine(), out index);
+            index--;  //suit to indexes
+            if (!isIndexCorrect || index < 0 || index > options.Length) // > instead of >= - options.Length = Exit
+                Console.WriteLine("Incorrect value, try again...");
             else break;
         } while (true);
 
+        if (index == options.Length) throw new ConsoleException(3, []);
         return index;
     }
 }
