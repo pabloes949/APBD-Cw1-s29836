@@ -140,7 +140,11 @@ public static class TerminalHandler
 
     private static void HandleEquipmentRegisterPrompt(params string[] args)
     {
-        Console.WriteLine("handle new equipment");
+        string[] equipmentTypes = Equipment.GetEquipmentTypes();
+        //int chosenType = TerminalHandler.GetOptionFromUser("Choose equipment type", "give up adding new equipment", equipmentTypes);
+        //Equipment e = Equipment.CreateEquipment[equipmentTypes[chosenType]]();
+        //RentalHandler.RegisterNewEquipment(e);
+        //Console.WriteLine($"Equipment {e.Id} registered successfully.");
     }
 
     private static void HandleClientAddPrompt(params string[] args)
