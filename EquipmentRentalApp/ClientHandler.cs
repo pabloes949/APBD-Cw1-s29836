@@ -33,7 +33,7 @@ public static class ClientHandler
     public static Client? GetClientById(string id)
     {
         if (ClientIdentifiers.ContainsKey(id)) return ClientIdentifiers[id];
-        else return null;
+        return null;
     }
 
     public static void getClientList(Action<Client> callback)

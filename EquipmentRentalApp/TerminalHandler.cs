@@ -1,4 +1,6 @@
-﻿namespace EquipmentRentalApp;
+﻿using System.Globalization;
+
+namespace EquipmentRentalApp;
 
 public static class TerminalHandler
 {
@@ -29,9 +31,6 @@ public static class TerminalHandler
                 case "exit":
                     HandleExitPrompt();
                     return; //RETURN!!!
-                case "register":
-                    HandleEquipmentRegisterPrompt(args);
-                    break;
                 case "client-add":
                     HandleClientAddPrompt();
                     break;
@@ -52,6 +51,9 @@ public static class TerminalHandler
                     break;
                 case "return":
                     HandleEquipmentReturnPrompt(args);
+                    break;
+                case "equipment-add":
+                    HandleEquipmentAddPrompt(args);
                     break;
                 case "equipment-list":
                     HandleEquipmentListPrompt(args);
@@ -78,7 +80,7 @@ public static class TerminalHandler
         }
         catch (ConsoleException e)
         {
-            Console.WriteLine($"WARN: {e.Message}\nTry again...");
+            Console.WriteLine($"WARN: {e.Message}");
         }
 
         ExpectUserCommand();
@@ -93,11 +95,9 @@ public static class TerminalHandler
                     list of commands
                 exit
                     exit program
-                register {category} {equipment-name} {quantity}
-                    register new equipment
-                    quantity is optional, default: 1
-                client-add {client-id} {name(s) surname(s)}
-                    register new client - the use is brought through a survey
+                client-add
+                    register new client
+                    the user is brought through a survey
                 client-detail {client-id}
                     show client information
                 client-list
@@ -106,10 +106,13 @@ public static class TerminalHandler
                     list equipment rented by client
                 client-payments {client-id}
                     show if client has outstanding payments 
-                rent {client-id} {equipment-id}
+                rent {client-id} {equipment-id} {date}
                     rent equipment to client
                 return {equipment-id}
                     register an equipment return in system
+                equipment-add
+                    the user is brought through a survey
+                    register new equipment
                 equipment-list
                     list registered equipment
                 equipment-list {category}
@@ -142,13 +145,14 @@ public static class TerminalHandler
             "Could not interpret command. Try again or type\nhelp - list of commands\nexit - exit program");
     }
 
-    private static void HandleEquipmentRegisterPrompt(params string[] args)
+    private static void HandleEquipmentAddPrompt(params string[] args)
     {
         string[] equipmentTypes = Equipment.GetEquipmentTypes();
-        //int chosenType = TerminalHandler.GetOptionFromUser("Choose equipment type", "give up adding new equipment", equipmentTypes);
-        //Equipment e = Equipment.CreateEquipment[equipmentTypes[chosenType]]();
-        //RentalHandler.RegisterNewEquipment(e);
-        //Console.WriteLine($"Equipment {e.Id} registered successfully.");
+        int chosenType =
+            TerminalHandler.GetOptionFromUser("Choose equipment type", "give up adding new equipment", equipmentTypes);
+        Equipment e = Equipment.CreateEquipment[equipmentTypes[chosenType]]();
+        RentalHandler.RegisterNewEquipment(e);
+        Console.WriteLine($"Equipment {e.Id} registered successfully.");
     }
 
     private static void HandleClientAddPrompt()
@@ -188,7 +192,26 @@ public static class TerminalHandler
 
     private static void HandleEquipmentRentalPrompt(params string[] args)
     {
-        Console.WriteLine("rent equipment to client");
+        if (args.Length < 3) throw new ConsoleException(22, []);
+
+        string clientId = args[0].Trim();
+        string equipmentId = args[1].Trim();
+        string userDate = args[2].Trim();
+        if (equipmentId.Length == 0 || clientId.Length == 0 || userDate.Length == 0) throw new ConsoleException(23, []);
+
+        Equipment? equipment = RentalHandler.GetEquipmentById(equipmentId);
+        Client? client = ClientHandler.GetClientById(clientId);
+
+        if (equipment == null) throw new ConsoleException(24, new[] { equipmentId });
+        if (client == null) throw new ConsoleException(25, new[] { clientId });
+
+        string[] formats = { "yyyy-MM-dd", "dd.MM.yyyy" };
+
+        if (!DateTime.TryParseExact(userDate, formats, CultureInfo.InvariantCulture, DateTimeStyles.None,
+                out DateTime returnDate))
+            throw new ConsoleException(26, new[] { string.Join(", ", formats) });
+
+        RentalHandler.RentEquipment(equipment, client, returnDate);
     }
 
     private static void HandleEquipmentReturnPrompt(params string[] args)
@@ -198,12 +221,18 @@ public static class TerminalHandler
 
     private static void HandleEquipmentListPrompt(params string[] args)
     {
-        Console.WriteLine("list registered equipment (by given category)");
+        if (RentalHandler.GetEquipmentCount() == 0) throw new ConsoleException(18, []);
+        RentalHandler.GetEquipmentList(eq => Console.WriteLine(eq.ToString()));
     }
 
     private static void HandleEquipmentDetailPrompt(params string[] args)
     {
-        Console.WriteLine("show equipment information");
+        if (args.Length < 1) throw new ConsoleException(19, []);
+        string id = args[0].Trim();
+        if (id.Length == 0) throw new ConsoleException(20, []);
+        Equipment? equipment = RentalHandler.GetEquipmentById(id);
+        if (equipment == null) throw new ConsoleException(21, new[] { id });
+        Console.WriteLine(equipment.ToString());
     }
 
     private static void HandleEquipmentAvailabilityPrompt(params string[] args)
@@ -255,7 +284,7 @@ public static class TerminalHandler
         do
         {
             bool isIndexCorrect = int.TryParse(Console.ReadLine(), out index);
-            index--;  //suit to indexes
+            index--; //suit to indexes
             if (!isIndexCorrect || index < 0 || index > options.Length) // > instead of >= - options.Length = Exit
                 Console.WriteLine("Incorrect value, try again...");
             else break;

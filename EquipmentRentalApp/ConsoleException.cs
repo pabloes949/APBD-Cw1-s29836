@@ -24,7 +24,7 @@ public class ConsoleException : Exception
             7 => $"The payment for {args[0]} can be accepted only after a return.",
             8 => $"The client with {args[0]} id is already registered in system.",
             9 => $"The client with {args[0]} id has outstanding payments for {args[0]} days and cannot rent any more equipment.",
-            10 => "Invalid return date. Please provide a future date.",
+            10 => "Invalid expected day of return. Please provide a future date.",
             11 => "",
             12 => "The client-add command user-name cannot be empty value",
             13 => "The client-detail command expects client-id argument.",
@@ -32,6 +32,15 @@ public class ConsoleException : Exception
             15 => $"The client with {args[0]} id does not exist.",
             16 => "The list of clients is empty.",
             17 => "Incorrect value, try again...",
+            18 => "The list of equipment is empty.",
+            19 => "The equipment-detail command expects equipment-id argument.",
+            20 => "The equipment-detail command equipment-id cannot be empty value",
+            21 => $"The equipment with {args[0]} id does not exist.",
+            22 => "The rent command expects client-id equipment-id return-dates arguments.",
+            23 => $"The rent command client-id equipment-id return-dates arguments cannot be empty value.",
+            24 => $"The equipment with {args[0]} id does not exist.",
+            25 => $"The client with {args[0]} id does not exist.",
+            26 => $"Incorrect date format. Legal format is {args[0]}",
             _ => ""
         };
     }
