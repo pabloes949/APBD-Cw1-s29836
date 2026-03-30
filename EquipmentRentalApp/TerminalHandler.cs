@@ -70,7 +70,7 @@ public static class TerminalHandler
                     HandleEquipmentHistoryPrompt(args);
                     break;
                 case "report":
-                    HandleReportRequestPrompt(args);
+                    HandleReportRequestPrompt();
                     break;
                 case "payment-accept":
                     HandlePaymentPrompt(args);
@@ -130,7 +130,7 @@ public static class TerminalHandler
                     list equipment rental history
                 equipment-state {equipment-id}
                     set a state of equipment (operable, broken, repair)
-                report {date-from} {date-to}
+                report
                     generate rental report in the given period of time
                 payment-accept {client-id} {equipment-id}
                     register payment for delayed return
@@ -293,9 +293,10 @@ public static class TerminalHandler
         if (count == 0) throw new ConsoleException(31, new[] { id });
     }
 
-    private static void HandleReportRequestPrompt(params string[] args)
+    private static void HandleReportRequestPrompt()
     {
-        Console.WriteLine("generate rental report in the given period of time");
+        Console.WriteLine($"Client number: {ClientHandler.GetClientCount()}");
+        Console.WriteLine($"Equipment number: {RentalHandler.GetEquipmentCount()}");
     }
 
     private static void HandlePaymentPrompt(params string[] args)
