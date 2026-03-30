@@ -126,8 +126,6 @@ public static class TerminalHandler
                     show equipment information
                 equipment-available {equipment-id}
                     check if equipment is available to be rented
-                equipment-available
-                    list only available equipment
                 equipment-history {equipment-id}
                     list equipment rental history
                 equipment-state {equipment-id}
@@ -275,7 +273,13 @@ public static class TerminalHandler
 
     private static void HandleEquipmentAvailabilityPrompt(params string[] args)
     {
-        Console.WriteLine("check if equipment is available to be rented");
+        if (args.Length < 1) throw new ConsoleException(19, []);
+        string id = args[0].Trim();
+        if (id.Length == 0) throw new ConsoleException(20, []);
+        Equipment? equipment = RentalHandler.GetEquipmentById(id);
+        if (equipment == null) throw new ConsoleException(21, new[] { id });
+        bool isAvailable = !RentalHandler.IsEquipmentRented(equipment);
+        Console.WriteLine(isAvailable ? "Available" : "Not available" );
     }
 
     private static void HandleEquipmentHistoryPrompt(params string[] args)

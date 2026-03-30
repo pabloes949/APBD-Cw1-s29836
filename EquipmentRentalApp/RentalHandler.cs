@@ -52,7 +52,7 @@ public static class RentalHandler
         return id;
     }
 
-    private static bool IsEquipmentRented(Equipment equipment)
+    public static bool IsEquipmentRented(Equipment equipment)
     {
         List<Rental> history = EquipmentRentalHistory[equipment];
         Rental? last = history.Count > 0 ? history[history.Count - 1] : null;
