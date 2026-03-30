@@ -45,6 +45,7 @@ public class ConsoleException : Exception
             28 => $"The are no unpaid assets for {args[0]} client.",
             29 => $"The are no rented equipment by {args[0]} client.",
             30 => $"The payment-accept command client-id equipment-id arguments cannot be empty value.",
+            31 => $"The is no renting history for equipment {args[0]}.",
             _ => ""
         };
     }

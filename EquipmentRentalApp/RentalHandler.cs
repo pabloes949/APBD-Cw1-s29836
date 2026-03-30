@@ -36,11 +36,11 @@ public static class RentalHandler
         var last = history[history.Count - 1];
         last.RegisterReturn();
     }
-    
+
     public static void PayEquipment(Equipment equipment, Client client)
     {
         Rental? r = ClientHandler.HasClientUnpaidAsset(client, equipment);
-        if(r == null) throw new ConsoleException(6, new[] { equipment.Id, client.Id });
+        if (r == null) throw new ConsoleException(6, new[] { equipment.Id, client.Id });
         r.AcceptPayment();
     }
 
@@ -59,7 +59,7 @@ public static class RentalHandler
         if (last == null) return false;
         return last.IsRented;
     }
-    
+
     public static int GetEquipmentCount()
     {
         return EquipmentIdentifiers.Count;
@@ -70,6 +70,13 @@ public static class RentalHandler
         foreach (Equipment eq in EquipmentIdentifiers.Values) callback(eq);
     }
 
+    public static int ListEquipmentHistory(Equipment equipment, Action<string> callback)
+    {
+        if (EquipmentRentalHistory.ContainsKey(equipment))
+            foreach (Rental r in EquipmentRentalHistory[equipment])
+                callback(r.ToString());
+        return EquipmentRentalHistory[equipment].Count;
+    }
 
     public static Equipment? GetEquipmentById(string id)
     {

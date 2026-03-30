@@ -280,7 +280,13 @@ public static class TerminalHandler
 
     private static void HandleEquipmentHistoryPrompt(params string[] args)
     {
-        Console.WriteLine("list equipment rental history");
+        if (args.Length < 1) throw new ConsoleException(19, []);
+        string id = args[0].Trim();
+        if (id.Length == 0) throw new ConsoleException(20, []);
+        Equipment? equipment = RentalHandler.GetEquipmentById(id);
+        if (equipment == null) throw new ConsoleException(21, new[] { id });
+        int count = RentalHandler.ListEquipmentHistory(equipment, (eq) => Console.WriteLine(eq));
+        if (count == 0) throw new ConsoleException(31, new[] { id });
     }
 
     private static void HandleReportRequestPrompt(params string[] args)
