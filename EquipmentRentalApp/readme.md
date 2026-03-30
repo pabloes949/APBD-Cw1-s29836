@@ -1,4 +1,13 @@
-﻿# Equipment Rental App
+﻿# How to install:
+
+```
+git clone https://github.com/pabloes949/APBD-Cw1-s29836.git
+cd APBD-Cw1-s29836/EquipmentRentalApp
+dotnet build
+dotnet run
+```
+
+# Equipment Rental App
 
 ## Project Overview
 
