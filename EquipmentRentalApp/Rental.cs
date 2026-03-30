@@ -2,8 +2,8 @@
 
 public class Rental
 {
-    private Client _client;
-    private Equipment _equipment;
+    public Client Client { get; }
+    public Equipment Equipment { get; }
     private DateTime _fromDate;
     private DateTime _toDate;
     private DateTime? _returnDate = null;
@@ -20,11 +20,11 @@ public class Rental
         }
     }
 
-    public Rental(Equipment equipment, Client client, DateTime toDate)
+    public Rental(Equipment equipment, Client client, DateTime fromDate, DateTime toDate)
     {
-        this._client = client;
-        this._equipment = equipment;
-        this._fromDate = DateTime.Now;
+        this.Client = client;
+        this.Equipment = equipment;
+        this._fromDate = fromDate;
         this._toDate = toDate;
     }
 
@@ -35,15 +35,25 @@ public class Rental
 
     public void RegisterReturn(DateTime returnDate)
     {
-        if (!this.IsRented) throw new ConsoleException(4, new[] { this._equipment.Id });
-        if (returnDate < this._fromDate) throw new ConsoleException(5, new[] { this._equipment.Id });
+        if (!this.IsRented) throw new ConsoleException(4, new[] { this.Equipment.Id });
+        if (returnDate < this._fromDate) throw new ConsoleException(5, new[] { this.Equipment.Id });
         this._returnDate = returnDate;
     }
 
     public void AcceptPayment()
     {
-        if (this.IsRented) throw new ConsoleException(7, new[] { this._equipment.Id });
-        if (this.UnpaidDays == 0) throw new ConsoleException(6, new[] { this._equipment.Id, this._client.Id });
+        if (this.IsRented) throw new ConsoleException(7, new[] { this.Equipment.Id });
         this._payment = true;
+    }
+
+    public bool IsRentedFor(Client client)
+    {
+        return this.IsRented && this.Client == client;
+    }    
+    
+    public override string ToString()
+    {
+        return
+            $"[Rental] Client ID: {this.Client.Id}; Client: {this.Client.Personalia}; Equipment ID: {this.Equipment.Id}; Equipment: {this.Equipment.Description}; Rental date: {this._fromDate.ToString("yyyy-MM-dd")}; Expected return date: {this._toDate.ToString("yyyy-MM-dd")}; Actual return date: {(this.IsRented ?"---": this._returnDate?.ToString("yyyy-MM-dd"))}; Unpaid days: {this.UnpaidDays}";
     }
 }

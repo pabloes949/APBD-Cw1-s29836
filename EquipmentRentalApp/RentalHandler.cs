@@ -19,22 +19,29 @@ public static class RentalHandler
         ClientHandler.ClientRentalHistory[client].Add(rental);
     }
 
-    public static void RentEquipment(Equipment equipment, Client client, DateTime toDate)
+    public static void RentEquipment(Equipment equipment, Client client, DateTime fromDate, DateTime toDate)
     {
         if (IsEquipmentRented(equipment)) throw new ConsoleException(1, new[] { equipment.Id, client.Id });
         int unpaidDays = ClientHandler.CountUnpaidDays(client);
         if (unpaidDays > 0) throw new ConsoleException(9, new[] { client.Id, unpaidDays.ToString() });
-        if (toDate < DateTime.Now) throw new ConsoleException(10, []);
-        Rental rental = new Rental(equipment, client, toDate);
+        if (toDate < fromDate) throw new ConsoleException(10, []);
+        Rental rental = new Rental(equipment, client, fromDate, toDate);
         RentalHandler.RegisterNewRental(equipment, client, rental);
     }
 
-    public static void ReturnEquipment(Equipment equipment, Client client)
+    public static void ReturnEquipment(Equipment equipment)
     {
         if (!IsEquipmentRented(equipment)) throw new ConsoleException(2, new[] { equipment.Id });
         var history = EquipmentRentalHistory[equipment];
         var last = history[history.Count - 1];
         last.RegisterReturn();
+    }
+    
+    public static void PayEquipment(Equipment equipment, Client client)
+    {
+        Rental? r = ClientHandler.HasClientUnpaidAsset(client, equipment);
+        if(r == null) throw new ConsoleException(6, new[] { equipment.Id, client.Id });
+        r.AcceptPayment();
     }
 
     public static string GenerateEquipmentId()
@@ -52,7 +59,7 @@ public static class RentalHandler
         if (last == null) return false;
         return last.IsRented;
     }
-
+    
     public static int GetEquipmentCount()
     {
         return EquipmentIdentifiers.Count;

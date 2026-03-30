@@ -3,11 +3,17 @@
 public abstract class Equipment
 {
     public string Id { get; } = RentalHandler.GenerateEquipmentId();
+    public string Description
+    {
+        get { return $"{this.Producer} {this.Model}"; }
+    }
     protected string Producer { get; }
     protected string Model { get; }
     protected string SerialNumber { get; }
     protected EquipmentCondition Condition { get; }
 
+    
+    
     protected Equipment()
     {
         this.Producer = TerminalHandler.GetValueFromUser("Give a producer", true);

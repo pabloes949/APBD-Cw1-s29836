@@ -2,10 +2,17 @@
 
 public abstract class Client
 {
-    public string? Id { get; protected set; }
+    public string Id { get; protected set; }
+
+    public string Personalia
+    {
+        get { return $"{this.Name} {this.Surname}"; }
+    }
+
     protected string? Name { get; }
     protected string? Surname { get; }
     protected string? Email { get; }
+
 
     protected Client()
     {
@@ -43,6 +50,7 @@ public abstract class Internal : Client
                 Console.WriteLine("The given index number is already registered, try again...");
                 return false;
             }
+
             return true;
         });
     }
@@ -141,8 +149,8 @@ public class Employee : Internal
             Enum.GetNames(typeof(Position))
         );
     }
-    
-    
+
+
     public override string ToString()
     {
         return
@@ -153,12 +161,13 @@ public class Employee : Internal
 public class Guest : Client
 {
     private string Company { get; set; }
+
     public Guest()
     {
         this.Id = ClientHandler.GenerateClientId();
         this.Company = TerminalHandler.GetValueFromUser("Give company name", true);
     }
-    
+
     public override string ToString()
     {
         return

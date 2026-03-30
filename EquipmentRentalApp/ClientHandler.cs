@@ -10,8 +10,8 @@ public static class ClientHandler
         ClientRentalHistory.Add(client, new List<Rental>());
         ClientIdentifiers.Add(client.Id, client);
     }
-    
-    public static Dictionary<Rental, int> ListUnpaidAssets(Client client)
+
+    private static Dictionary<Rental, int> ListUnpaidAssets(Client client)
     {
         Dictionary<Rental, int> total = new Dictionary<Rental, int>();
 
@@ -20,6 +20,35 @@ public static class ClientHandler
                 if (r.UnpaidDays > 0)
                     total.Add(r, r.UnpaidDays);
         return total;
+    }
+
+    public static Rental? HasClientUnpaidAsset(Client client, Equipment equipment)
+    {
+        if (ClientRentalHistory.ContainsKey(client))
+            foreach (Rental r in ClientRentalHistory[client])
+                if (r.Equipment == equipment && r.UnpaidDays > 0) return r;
+
+        return null;
+    }
+    
+    public static int LoopUnpaidAssets(Client client, Action<string> callback)
+    {
+        int count = 0;
+        if (ClientRentalHistory.ContainsKey(client))
+        {
+            foreach (Rental r in ClientRentalHistory[client])
+            {
+                if (r.UnpaidDays > 0)
+                {
+                    count++;
+                    callback(r.ToString());
+                }
+            }
+
+            return count;
+        }
+
+        return -1;
     }
 
     public static int CountUnpaidDays(Client client)
@@ -45,12 +74,25 @@ public static class ClientHandler
     {
         return ClientIdentifiers.Count;
     }
-    
+
+    public static int GetClientRentals(Client client, Action<string> callback)
+    {
+        int count = -1;
+        if (ClientRentalHistory.ContainsKey(client))
+        {
+            count = ClientRentalHistory[client].Count;
+            foreach (Rental r in ClientRentalHistory[client])
+                callback(r.ToString());
+        }
+
+        return count;
+    }
+
     public static bool IsIdentifierRegistered(string id)
     {
         return ClientIdentifiers.ContainsKey(id);
     }
-    
+
     public static string GenerateClientId()
     {
         string id;
