@@ -4,16 +4,16 @@ namespace EquipmentRentalApp;
 
 public static class TerminalHandler
 {
-    public static void DisplayInitialPrompt()
+
+    public static void Run()
     {
-        Console.Clear();
-        Console.WriteLine("Hello User!\nhelp - list of commands\nexit - exit program");
+        ConsoleBot.RestoreMode = true;
         ExpectUserCommand();
     }
-
+    
     private static void ExpectUserCommand()
     {
-        string command = Console.ReadLine() ?? "";
+        string command = ConsoleBot.RestoreMode ? ConsoleBot.ReadStorageNext():Console.ReadLine() ?? "";
         string[] parts = command.Split(' ');
         string[] rest = parts[1..];
         HandleUserCommand(parts[0], rest);
@@ -25,6 +25,9 @@ public static class TerminalHandler
         {
             switch (command)
             {
+                case "welcome":
+                    DisplayWelcomePrompt();
+                    break;
                 case "help":
                     DisplayHelpPrompt();
                     break;
@@ -86,11 +89,12 @@ public static class TerminalHandler
         ExpectUserCommand();
     }
 
-
     private static void DisplayHelpPrompt()
     {
         Console.WriteLine(
             """
+                welcome
+                    display initial welcome message
                 help
                     list of commands
                 exit
@@ -133,7 +137,13 @@ public static class TerminalHandler
                     register payment for delayed return
             """);
     }
-
+    
+    private static void DisplayWelcomePrompt()
+    {
+        Console.Clear();
+        Console.WriteLine("Hello User!\nhelp - list of commands\nexit - exit program");
+    }
+    
     private static void HandleExitPrompt()
     {
         Console.WriteLine("Bye User!");
@@ -262,7 +272,7 @@ public static class TerminalHandler
         Console.WriteLine(instruction);
         do
         {
-            string value = Console.ReadLine() ?? "";
+            string value = ConsoleBot.RestoreMode ? ConsoleBot.ReadStorageNext():Console.ReadLine() ?? "";
             if (value.Trim().Length == 0)
             {
                 if (isOptional) return "";
@@ -283,7 +293,7 @@ public static class TerminalHandler
         Console.WriteLine(instruction);
         do
         {
-            bool isIndexCorrect = int.TryParse(Console.ReadLine(), out index);
+            bool isIndexCorrect = int.TryParse(ConsoleBot.RestoreMode ? ConsoleBot.ReadStorageNext():Console.ReadLine(), out index);
             index--; //suit to indexes
             if (!isIndexCorrect || index < 0 || index > options.Length) // > instead of >= - options.Length = Exit
                 Console.WriteLine("Incorrect value, try again...");
