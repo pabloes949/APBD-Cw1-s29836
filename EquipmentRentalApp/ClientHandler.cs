@@ -1,16 +1,28 @@
-﻿namespace EquipmentRentalApp;
+﻿using System.Text.Json;
+
+namespace EquipmentRentalApp;
 
 public static class ClientHandler
 {
     public static Dictionary<Client, List<Rental>> ClientRentalHistory { get; } = new();
-    private static Dictionary<string, Client> ClientIdentifiers { get; } = new();
+    private static Dictionary<string, Client> ClientIdentifiers { get; set; } = new();
+    private static string ClientUrl { get; } = Path.Combine(StorageHandler.DirPath, "client.json");
 
     public static void RegisterNewClient(Client client)
     {
         ClientRentalHistory.Add(client, new List<Rental>());
         ClientIdentifiers.Add(client.Id, client);
+        StorageHandler.Save(ClientUrl, StorageHandler.OnError.Warn, () =>
+            JsonSerializer.Serialize(ClientIdentifiers, StorageHandler.SavingJsonOptions)
+        );
     }
-    
+
+    public static void Load()
+    {
+        StorageHandler.Load(ClientUrl, StorageHandler.OnError.Warn, (json) =>
+            ClientIdentifiers = JsonSerializer.Deserialize<Dictionary<string, Client>>(json) ?? ClientIdentifiers);
+    }
+
     public static Dictionary<Rental, int> ListUnpaidAssets(Client client)
     {
         Dictionary<Rental, int> total = new Dictionary<Rental, int>();
@@ -45,12 +57,12 @@ public static class ClientHandler
     {
         return ClientIdentifiers.Count;
     }
-    
+
     public static bool IsIdentifierRegistered(string id)
     {
         return ClientIdentifiers.ContainsKey(id);
     }
-    
+
     public static string GenerateClientId()
     {
         string id;

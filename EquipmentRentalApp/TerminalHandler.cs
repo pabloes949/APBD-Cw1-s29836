@@ -6,7 +6,6 @@ public static class TerminalHandler
 {
     public static void DisplayInitialPrompt()
     {
-        Console.Clear();
         Console.WriteLine("Hello User!\nhelp - list of commands\nexit - exit program");
         ExpectUserCommand();
     }

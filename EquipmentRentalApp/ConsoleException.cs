@@ -41,6 +41,10 @@ public class ConsoleException : Exception
             24 => $"The equipment with {args[0]} id does not exist.",
             25 => $"The client with {args[0]} id does not exist.",
             26 => $"Incorrect date format. Legal format is {args[0]}",
+            27 => $"The data could not be loaded from '{args[0]}'. The registry is empty.",
+            28 => $"There file '{args[0]}' is broken. The data could not be retrieved.",
+            29 => $"The data could not be updated on '{args[0]}' path.",
+            30 => $"",
             _ => ""
         };
     }
